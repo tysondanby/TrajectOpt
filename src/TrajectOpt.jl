@@ -14,12 +14,11 @@ module TrajectOpt
     export Model
     export LowFidel 
     export HighFidel
+    export Conventional
     export BiWingTailSitter
     export polar_constructor
+    export conventional_forces_constructor
     export biwing_tailsitter_forces_constructor
-    # export dynamicsEU
-    # export simulateEU
-    # export step!
     export dynamics2D!
     export simulate
     export plot_simulation

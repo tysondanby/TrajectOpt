@@ -57,14 +57,15 @@ function plot_simulation(path, uSpline)
     posx = posx_spline.(t)
     aoa = theta - gamma
 
-    p1 = plot(t, Vinf, xlabel = "Time (s)", ylabel = "State", label = "Velocity", legend = :none)
+    p1 = plot(t, Vinf, xlabel = "Time (s)", ylabel = "State", label = "Velocity", legend = :topleft)
     plot!(t, gamma, label = "Flightpath Angle")
     plot!(t, theta, label = "Pitch Angle")
     plot!(t, aoa, label = "Angle of Attack")
     plot!(t, posy, label = "Y Position")
     # plot!(t, posx, label = "X Position")
-    p2 = plot(t, u_top, xlabel = "Time (s)", ylabel = "Thrust (N)", label = "Top", legend = :topleft)
-    plot!(t, u_bottom, label = "Bottom")
+    # p2 = plot(t, u_top, xlabel = "Time (s)", ylabel = "Thrust (N)", label = "Top", legend = :topleft)
+    p2 = plot(t, u_top, xlabel = "Time (s)", ylabel = "Input", label = "Thrust", legend = :topleft)
+    plot!(t, u_bottom, label = "Elevator")
     p = plot(p1,p2,layout = 2)
     display(p)
 end

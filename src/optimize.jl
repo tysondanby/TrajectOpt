@@ -1,5 +1,5 @@
 
-function optimize_trim(x0, u0, model; final = 0)
+function optimize_trim(x0, u0, model, final)
     trim_objective = trim_objective_constructor(final, model)
     designVars = zeros(length(u0) + length(x0))
     designVars[1:2] = u0
@@ -24,18 +24,16 @@ function trim_objective_constructor(final, model)
         u = designVars[1:2]
         uSpline = [FM.Akima(0:2,u[1]*ones(3)), FM.Akima(0:2,u[2]*ones(3))]
         x = designVars[3:end]
-        obj = sum(u .^2)
+        obj = u[1]#sum(u .^2)
         dx = dynamics_2D!(x, x, (uSpline, model), 1) #look up best practices
         g[1] = dx[1]
         g[2] = dx[2]
         g[3] = dx[3]
         g[4] = dx[4]
         g[5] = u[1]
-        g[6] = u[2] 
+        # g[6] = u[2] 
         g[7] = x[2]
-        if typeof(final) == Vector{Float64}
-            g[8:11] = x[1:4] - final[1:4]
-        end
+        g[8] = x[6] - final[6]
         return obj
     end
     return trim_objective
@@ -47,6 +45,8 @@ function optimize_trajectory(initial, final, us, tFinal, model)
     ng = 3
     lu = zeros(length(designVars))
     uu = 5*ones(length(designVars))
+    lu[Int((end-1)/2):end-1] .= -30
+    uu[Int((end-1)/2):end-1] .= 30
     uu[end] = Inf
     lg = zeros(ng)
     ug = zeros(ng)
@@ -55,7 +55,7 @@ function optimize_trajectory(initial, final, us, tFinal, model)
         "max_iter" => 1000
         )
     solver = SNOPT()
-    options = Options(derivatives = ForwardAD();solver)
+    options = Options(derivatives = ForwardAD(); solver)
     xopt, fopt, info = minimize(trajectory_objective, designVars, ng, lu, uu, lg, ug, options)
     return xopt, fopt, info
 end
@@ -63,14 +63,15 @@ end
 function trajectory_objective_constructor(initial, final, model)
     function trajectory_objective(g,designVars)
         #designVars[:1:end-1] = thrust spline points, designVars[end] = time
-        obj = sum(designVars[1:end-1].^2)
+        # obj = sum(designVars[1:end-1].^2)
+        obj = sum(designVars[1:Int((end-1)/2)].^2)
         #rearrange designVars
         us = transpose(reshape(designVars[1:end-1],Int((length(designVars)-1)/2),2))
         #get values from the dual numbers
         tSpan = [0,designVars[end]]
         #create splines
-        t = range(0,stop = tSpan[2], length = length(us[1,:]))
-        uSpline = [FM.Akima(t,us[1,:]),FM.Akima(t,us[2,:])]
+        t = range(0, stop = tSpan[2], length = length(us[1,:]))
+        uSpline = [FM.Akima(t,us[1,:]), FM.Akima(t,us[2,:])]
         x = simulate(initial, uSpline, model, tSpan)
         # dx = dynamics!(x[:,end],x[:,end],(model, uSpline),t)
         #constrain final states to the desired final states
@@ -82,7 +83,6 @@ function trajectory_objective_constructor(initial, final, model)
         # g[2:length(t)+1] = x[1,mappedXIndices] .- initial[1]
         # g[2:length(t)+1] = x[2,mappedXIndices]
         # g[length(t)+1:end] = x[4,mappedXIndices]
-
 
         # Vinf = zeros(length(x.u))
         # gamma = zeros(length(x.u))

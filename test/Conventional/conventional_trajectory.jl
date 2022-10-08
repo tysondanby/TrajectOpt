@@ -2,15 +2,15 @@ using TrajectOpt
 using Plots
 using FLOWMath
 
-#===============dynamics test================#
-
 #physical system
 m = 1.36
 I = .0111
-X = -.0086
-s = .25
-S = .05
-b = .508
+X = .0086
+L = .57     #tail moment arm
+SWing = .05
+bWing = .508
+STail = .017
+bTail = .15
 rho = 1.225
 mu = 1.81e-5
 g = 9.81
@@ -107,26 +107,44 @@ Cms = [
   0.18337    0.180956   0.180812   0.180767   0.180732
   0.20143    0.198386   0.198213   0.198159   0.198117
 ]
+planeParameters = Conventional(m, I, X, L, SWing, bWing, STail, bTail, rho, mu, g)
+wing_polar_function = polar_constructor(Cds, Cls, Cms, alphas, Res)
+tail_polar_function = polar_constructor(Cds, Cls, Cms, alphas, Res)
+planeForces = conventional_forces_constructor(wing_polar_function, tail_polar_function, planeParameters)
+plane = LowFidel(planeParameters, planeForces)
 
-#initial conditions
-x0 = [26.53543674218781, 1.6531711335659358, -2.381541895023577e-28, -9.859472699953022e-9, 0.0, 0.0]     
+initial = [
+  29.620798165000465,
+-1.0218757699999816e-14,
+ 0.0,
+ 0.9954411765904372,
+ 0.0,
+ 0.0
+]  
+u_initial = [ 1.0068490831512529, -7.101753959532225]
 
-#time interval 
-t = 0:1:10
-tSpan = [0,10]
+final = deepcopy(initial)
 
-#thrust inputs
-u_upper = Akima(t, 0.4096889309095969*ones(length(t)))
-u_lower = Akima(t, 0.201508784460286*ones(length(t)))
-uSpline = [u_upper, u_lower]
+# posy_final = 10
+# final[6] = posy_final
 
-#create model
-polar_function = polar_constructor(Cds, Cls, Cms, alphas, Res)
-CRC3Parameters = BiWingTailSitter(m, I, X, s, S, b, rho, mu, g)
-CRC3Forces = biwing_tailsitter_forces_constructor(polar_function, CRC3Parameters)
-CRC3 = LowFidel(CRC3Parameters, CRC3Forces)
+VinfFinal = 50
+final[1] = VinfFinal
 
-# Vinf, gamma, theta_dot, theta, posx, posy, alpha = simulate(x,u,t,CRC3)     for Euler simulation
 
-solution = simulate(x0,uSpline,CRC3,tSpan)
-plot_simulation(solution, uSpline)
+tFinal = 4
+
+us = u_initial.*ones(2,10)
+
+uopt, fopt = optimize_trajectory(initial, final, us, tFinal, plane)
+u = zeros(size(us))
+u[1,:] = uopt[1:Int((end-1)/2)]
+u[2,:] = uopt[Int((end-1)/2)+1:end-1]
+t = range(0,stop = uopt[end],length = length(u[1,:]))
+tSpan = [0,t[end]]
+uSpline = [Akima(t,u[1,:]),Akima(t,u[2,:])]
+
+#optimized simulation
+path = simulate(initial, uSpline, plane, tSpan)
+plot_simulation(path, uSpline)
+path

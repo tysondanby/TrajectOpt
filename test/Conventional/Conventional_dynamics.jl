@@ -13,7 +13,6 @@ STail = .017
 bTail = .15
 rho = 1.225
 mu = 1.81e-5
-
 g = 9.81
 
 #VLM model
@@ -108,8 +107,17 @@ Cms = [
   0.18337    0.180956   0.180812   0.180767   0.180732
   0.20143    0.198386   0.198213   0.198159   0.198117
 ]
-conventialPlaneParameters = Conventional(m, I, X, L, SWing, bWing, STail, bTail, rho, mu)
-wing_polar_function = polar_function_constructor(Cds, Cls, Cms, alphas, Res)
-tail_polar_function = polar_function_constructor(Cds, Cls, Cms, alphas, Res)
-forces = 
+planeParameters = Conventional(m, I, X, L, SWing, bWing, STail, bTail, rho, mu, g)
+wing_polar_function = polar_constructor(Cds, Cls, Cms, alphas, Res)
+tail_polar_function = polar_constructor(Cds, Cls, Cms, alphas, Res)
+planeForces = conventional_forces_constructor(wing_polar_function, tail_polar_function, planeParameters)
+plane = LowFidel(planeParameters, planeForces)
 
+x0 = [15, 2, 0, 5, 0, 0]
+u = [5, -5]
+tSpan = [0 70]
+t = range(0, stop = tSpan[2], length = 100)
+uSpline = [Akima(t,u[1]*ones(length(t))), Akima(t,u[2]*ones(length(t)))]
+
+path = simulate(x0, uSpline, plane, tSpan)
+plot_simulation(path, uSpline)

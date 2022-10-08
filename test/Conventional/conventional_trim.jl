@@ -2,15 +2,15 @@ using TrajectOpt
 using Plots
 using FLOWMath
 
-#===============dynamics test================#
-
 #physical system
 m = 1.36
 I = .0111
-X = -.0086
-s = .25
-S = .05
-b = .508
+X = .0086
+L = .57     #tail moment arm
+SWing = .05
+bWing = .508
+STail = .017
+bTail = .15
 rho = 1.225
 mu = 1.81e-5
 g = 9.81
@@ -107,26 +107,23 @@ Cms = [
   0.18337    0.180956   0.180812   0.180767   0.180732
   0.20143    0.198386   0.198213   0.198159   0.198117
 ]
+planeParameters = Conventional(m, I, X, L, SWing, bWing, STail, bTail, rho, mu, g)
+wing_polar_function = polar_constructor(Cds, Cls, Cms, alphas, Res)
+tail_polar_function = polar_constructor(Cds, Cls, Cms, alphas, Res)
+planeForces = conventional_forces_constructor(wing_polar_function, tail_polar_function, planeParameters)
+plane = LowFidel(planeParameters, planeForces)
 
-#initial conditions
-x0 = [26.53543674218781, 1.6531711335659358, -2.381541895023577e-28, -9.859472699953022e-9, 0.0, 0.0]     
+x0 = [15, 2, 0, 5, 0, 0]
+u0 = [5, -5]
 
-#time interval 
-t = 0:1:10
-tSpan = [0,10]
+final = deepcopy(x0)
+xopt, fopt = optimize_trim(x0, u0, plane, final)
+u = xopt[1:2]
+x = xopt[3:end]
 
-#thrust inputs
-u_upper = Akima(t, 0.4096889309095969*ones(length(t)))
-u_lower = Akima(t, 0.201508784460286*ones(length(t)))
-uSpline = [u_upper, u_lower]
+tSpan = [0 10]
+t = range(0, stop = tSpan[2], length = 100)
+uSpline = [Akima(t,u[1]*ones(length(t))), Akima(t,u[2]*ones(length(t)))]
 
-#create model
-polar_function = polar_constructor(Cds, Cls, Cms, alphas, Res)
-CRC3Parameters = BiWingTailSitter(m, I, X, s, S, b, rho, mu, g)
-CRC3Forces = biwing_tailsitter_forces_constructor(polar_function, CRC3Parameters)
-CRC3 = LowFidel(CRC3Parameters, CRC3Forces)
-
-# Vinf, gamma, theta_dot, theta, posx, posy, alpha = simulate(x,u,t,CRC3)     for Euler simulation
-
-solution = simulate(x0,uSpline,CRC3,tSpan)
-plot_simulation(solution, uSpline)
+path = simulate(x, uSpline, plane, tSpan)
+plot_simulation(path, uSpline)

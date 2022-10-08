@@ -6,7 +6,7 @@ using DelimitedFiles
 #physical system
 m = 1.36
 I = .0111
-X = .0086
+X = -.0086
 s = .25
 S = .05
 b = .508
@@ -110,7 +110,7 @@ Cms = -1*[
 
 #create model
 polar_function = polar_constructor(Cds, Cls, Cms, alphas, Res)
-CRC3Parameters = BiWingTailSitter(m, I, X, s, S, b, rho, mu)
+CRC3Parameters = BiWingTailSitter(m, I, X, s, S, b, rho, mu, g)
 CRC3Forces = biwing_tailsitter_forces_constructor(polar_function, CRC3Parameters)
 CRC3 = LowFidel(CRC3Parameters, CRC3Forces)
 
@@ -120,18 +120,19 @@ CRC3 = LowFidel(CRC3Parameters, CRC3Forces)
 # initial = [26.53543674218781, 1.6531711335659358, -2.381541895023577e-28, -9.859472699953022e-9, 0.0, 0.0]   
 # u_initial = [0.4096889309095969, 0.201508784460286]
 initial = [20.360249514824275, -9.793973890305291e-9, 1.639302791149322e-20, 1.3504258298384568, 0.0, 0.0]   
-u_initial = [0.23035833080744003, 0.18695614605033223]
+# u_initial = [0.23035833080744003, 0.18695614605033223]
+u_initial = [0.00016036799608707683, 0.0001503488915109187]
 # initial = [.000000001, 90, 0.0, 90, 0.0, 0.0]
 
 #trimmed final state
 final = deepcopy(initial)
 
 #desired final position
-# posy_final = 20
-# final[6] = posy_final
+posy_final = 1
+final[6] = posy_final
 
-VinfFinal = 30
-final[1] = VinfFinal
+# VinfFinal = 30
+# final[1] = VinfFinal
 
 # gammaFinal = 0.0
 # final[2] = gammaFinal
