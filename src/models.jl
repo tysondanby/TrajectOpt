@@ -21,7 +21,7 @@ struct BiWingTailSitter <: Parameters
     X::Float64
     s::Float64  #distance between wings
     S::Float64
-    b::Float64
+    b::Float64#
     rho::Float64
     mu::Float64
     g::Float64
@@ -29,7 +29,7 @@ end
 
 struct LowFidel <: Model
     parameters::Parameters
-    forces::Function  
+    forces::Function
 end
 
 struct HighFidel <: Model
@@ -97,8 +97,8 @@ function biwing_tailsitter_forces_constructor(polar_function, parameters::BiWing
     function forces_CRC3(x, u)
         vinf, gamma, thetadot, theta, posx, posy = x
         #get physical and environmental parameters
-        S = parameters.S  
-        b = parameters.b 
+        S = parameters.S
+        b = parameters.b
         c = S/b
         s = parameters.s
         X = parameters.X
@@ -110,25 +110,25 @@ function biwing_tailsitter_forces_constructor(polar_function, parameters::BiWing
         v = vinf - s/2*thetadot*cosd(alpha)
         Re = rho*v*c/mu
         #calculate aerodynamic forces
-        #top aerodynamics at current time step 
+        #top aerodynamics at current time step
         CdTop, ClTop, CmTop = polar_function(alpha,Re)
         #current bottom state
         v = vinf + s/2*thetadot*cosd(alpha)
         Re = rho*v*c/mu
-        #bottom aerodynamics current time step 
+        #bottom aerodynamics current time step
         CdBottom, ClBottom, CmBottom = polar_function(alpha,Re)
         f = [[CdTop, CdBottom] [ClTop, ClBottom] [CmTop, CmBottom]]'
         #denormalization
         f[1:2,:] *= 1/2*rho*v^2*S               # change v here!!
         f[3,:] *= 1/2*rho*v^2*S*c
-        #add thrust 
+        #add thrust
         # f[1,:] .-= 2*u*cosd(alpha)
         # f[2,:] .+= 2*u*sind(alpha)
         #forces in the x and y directions with respect to the inertial frame
         # f[1,:] .*= -1
         F = [sum(u)*cosd(alpha) - sum(f[1,:]) - m*9.81*sind(gamma), sum(u)*sind(alpha) + sum(f[2,:]) - m*9.81*cosd(gamma)]
         #total moment due to forces and torques
-        M = sum(f[3,:]) + s/2*(u[2] - u[1] + (f[1,1] - f[1,2])*cosd(alpha) + (f[2,2] - f[2,1])*sind(alpha)) - 
+        M = sum(f[3,:]) + s/2*(u[2] - u[1] + (f[1,1] - f[1,2])*cosd(alpha) + (f[2,2] - f[2,1])*sind(alpha)) -
             X*((f[2,1] + f[2,2])*cosd(alpha) + (f[1,1] + f[1,2])*sind(alpha))
         return F, M
     end

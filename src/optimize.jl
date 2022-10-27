@@ -19,8 +19,8 @@ function optimize_trim(x0, u0, model, final)
     return xopt, fopt
 end
 
-function trim_objective_constructor(final, model)
-    function trim_objective(g, designVars)
+function trim_objective_constructor(final, model)#Use optimizer to find a trimmed state
+    function trim_objective(g, designVars)#
         u = designVars[1:2]
         uSpline = [FM.Akima(0:2,u[1]*ones(3)), FM.Akima(0:2,u[2]*ones(3))]
         x = designVars[3:end]
@@ -30,8 +30,8 @@ function trim_objective_constructor(final, model)
         g[2] = dx[2]
         g[3] = dx[3]
         g[4] = dx[4]
-        g[5] = u[1]
-        # g[6] = u[2] 
+        g[5] = u[1] #TODO: why is this input constrained to zero? is it torque?
+        # g[6] = u[2]
         g[7] = x[2]
         g[8] = x[6] - final[6]
         return obj
@@ -60,11 +60,12 @@ function optimize_trajectory(initial, final, us, tFinal, model)
     return xopt, fopt, info
 end
 
-function trajectory_objective_constructor(initial, final, model)
-    function trajectory_objective(g,designVars)
+#Minimize Thrust squared with end trim state constrained
+function trajectory_objective_constructor(initial, final, model)#Give an inital state, desired final state, and a model. constructs an objective function with constraints.
+    function trajectory_objective(g,designVars)#g are constraints (residual functions, we want all g values to be zero) and designVars are the things we can change (thrust spline points and final time)
         #designVars[:1:end-1] = thrust spline points, designVars[end] = time
         # obj = sum(designVars[1:end-1].^2)
-        obj = sum(designVars[1:Int((end-1)/2)].^2)
+        obj = sum(designVars[1:Int((end-1)/2)].^2)   #Thrust squared
         #rearrange designVars
         us = transpose(reshape(designVars[1:end-1],Int((length(designVars)-1)/2),2))
         #get values from the dual numbers
@@ -75,7 +76,7 @@ function trajectory_objective_constructor(initial, final, model)
         x = simulate(initial, uSpline, model, tSpan)
         # dx = dynamics!(x[:,end],x[:,end],(model, uSpline),t)
         #constrain final states to the desired final states
-        g[1] = x[6,end] - final[6]     
+        g[1] = x[6,end] - final[6]
         g[2] = x[2,end] - final[2]
         g[3] = x[1,end] - final[1]
 
@@ -101,7 +102,7 @@ function trajectory_objective_constructor(initial, final, model)
         # Vinf_spline = FM.Akima(x.t,Vinf)
         # gamma_spline = FM.Akima(x.t,gamma)
         # theta_spline = FM.Akima(x.t,theta)
-        # posy_spline = FM.Akima(x.t,posy)  
+        # posy_spline = FM.Akima(x.t,posy)
         # Vinf_map = Vinf_spline.(t)
         # gamma_map = gamma_spline.(t)
         # theta_map = theta_spline.(t)
@@ -111,14 +112,14 @@ function trajectory_objective_constructor(initial, final, model)
         # end
         return obj
     end
-end 
+end
 
 function optimize_trajectory_by_segments(initial, final, us, tFinal, nSegs, model)
     #create segements
     segments = range(initial, stop = final, length = nSegs)
     # @show segments
     splineLength = Int((length(designVars)-1)/2)
-    splineSegment = 1:splineLength 
+    splineSegment = 1:splineLength
 
     #first segment optimization
     uopt, _, _ = optimize_trajectory(initial, segments[2], us, tFinal, model)
@@ -128,7 +129,7 @@ function optimize_trajectory_by_segments(initial, final, us, tFinal, nSegs, mode
     t = range(0,stop = uopt[end],length = length(u[1,splineSegment]))
     tSpan = zeros(2,length(segments))
     tSpan[:,1] = [0 t[end]]
-    uSpline = [Akima(t,u[1,splineSegment]),Akima(t,u[2,splineSegment])]  
+    uSpline = [Akima(t,u[1,splineSegment]),Akima(t,u[2,splineSegment])]
     segmentPath = simulate(initial, uSpline, model, tSpan[:,1])
 
     for i in 2:nSegs-1
@@ -138,7 +139,7 @@ function optimize_trajectory_by_segments(initial, final, us, tFinal, nSegs, mode
         uNew = [u[1,splineSegment[end]],u[2,splineSegment[end]]]    #maybe trim here
 
         #set initial design variables
-        designVars[1:Int((end-1)/2)] .= uNew[1] 
+        designVars[1:Int((end-1)/2)] .= uNew[1]
         designVars[Int((end-1)/2)+1:end-1] .= uNew[2]
         designVars[end] = t[end]
 
@@ -149,7 +150,7 @@ function optimize_trajectory_by_segments(initial, final, us, tFinal, nSegs, mode
         u[2,splineSegment] = uopt[1][Int((end-1)/2)+1:end-1]
         t = range(0,stop = uopt[1][end],length = length(u[1,splineSegment]))
         tSpan[:,i] = [0 t[end]]
-        uSpline = [Akima(t,u[1,splineSegment]),Akima(t,u[2,splineSegment])]  
+        uSpline = [Akima(t,u[1,splineSegment]),Akima(t,u[2,splineSegment])]
         segmentPath = simulate(state1, uSpline, model, tSpan[:,i])
     end
 
@@ -158,7 +159,7 @@ function optimize_trajectory_by_segments(initial, final, us, tFinal, nSegs, mode
     u[2,splineSegment[end]+1:end] = uopt[Int((end-1)/2)+1:end-1]
     t = range(0,stop = uopt[end],length = length(u[1,splineSegment[end]+1:end]))
     tSpan[:,end] = [0 t[end]]
-    uSpline = [Akima(t,u[1,splineSegment[end]+1:end]),Akima(t,u[2,splineSegment[end]+1:end])]  
+    uSpline = [Akima(t,u[1,splineSegment[end]+1:end]),Akima(t,u[2,splineSegment[end]+1:end])]
 
     tFinal = sum(tSpan[2,:])
     t = range(0,stop = tFinal, length = length(u[1,:]))
@@ -186,7 +187,7 @@ function optimization_tracker()
     Vinf_spline = FM.Akima(x.t,Vinf)
     gamma_spline = FM.Akima(x.t,gamma)
     theta_spline = FM.Akima(x.t,theta)
-    posy_spline = FM.Akima(x.t,posy)  
+    posy_spline = FM.Akima(x.t,posy)
     Vinf_map = Vinf_spline.(t)
     gamma_map = gamma_spline.(t)
     theta_map = theta_spline.(t)
@@ -218,7 +219,7 @@ end
 
 # function trajectory_objective_constructor3(initial,final,model)
 #     function trajectory_objective(g,designVars)
-#         obj = sum(designVars .^2)   
+#         obj = sum(designVars .^2)
 #         s = model.s
 #         uTop = designVars[1:end-1]
 #         uBottom = zeros(length(uTop))
@@ -268,7 +269,7 @@ end
 #         Vinf_spline = FM.Akima(x.t,Vinf)
 #         gamma_spline = FM.Akima(x.t,gamma)
 #         theta_spline = FM.Akima(x.t,theta)
-#         posy_spline = FM.Akima(x.t,posy)  
+#         posy_spline = FM.Akima(x.t,posy)
 #         Vinf_map = Vinf_spline.(t)
 #         gamma_map = gamma_spline.(t)
 #         theta_map = theta_spline.(t)
@@ -281,7 +282,7 @@ end
 #         end
 #         return obj
 #     end
-# end 
+# end
 
 # function optimize_trajectory4(initial,final,designVars,nSegs,model)
 #     for i in 1:nSegs
@@ -344,7 +345,7 @@ end
 # function thrust_objective_constructor(x,u_top,model)
 #     function thrust_objective(g,u_bottom)
 #         obj = u_bottom^2
-#         u_spline = [FM.Akima(0:2,u_top*ones(3)), FM.Akima(0:2,u_bottom*ones(3))]        
+#         u_spline = [FM.Akima(0:2,u_top*ones(3)), FM.Akima(0:2,u_bottom*ones(3))]
 #         dx = dynamics!(zeros(6),x,(model,u_spline),1)
 #         g[1] = dx[1]
 #         g[2] = dx[2]

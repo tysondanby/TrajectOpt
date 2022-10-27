@@ -116,8 +116,8 @@ CRC3Forces = biwing_tailsitter_forces_constructor(polar_function, CRC3Parameters
 CRC3 = LowFidel(CRC3Parameters, CRC3Forces)
 
 #initial guess for a trimmed state
-x0 = [26.53543674218781, 1.6531711335659358, -2.381541895023577e-28, -9.859472699953022e-9, 0.0, 0.0]   
-u0 = [0.4096889309095969, 0.201508784460286]        
+x0 = [26.53543674218781, 1.6531711335659358, -2.381541895023577e-28, -9.859472699953022e-9, 0.0, 0.0]
+u0 = [0.4096889309095969, 0.201508784460286]
 
 #optimized trim state
 xopt, fopt = optimize_trim(x0,u0,CRC3)
@@ -165,7 +165,7 @@ plot_simulation(path, uSpline)
 # L = zeros(length(Vinfs))
 # M = zeros(length(Vinfs))
 # for i in 1:length(Vinfs)
-#     xopt[i,:], fopt[i] = optimize_trim(u0,x0,model,Vinfs[i])  
+#     xopt[i,:], fopt[i] = optimize_trim(u0,x0,model,Vinfs[i])
 #     alph = xopt[i,6] - xopt[i,4]
 #     Reyn = rho*Vinfs[i]*c/mu
 #     fs = polar_funct(alph,Reyn)
