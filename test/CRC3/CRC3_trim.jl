@@ -120,7 +120,7 @@ x0 = [26.53543674218781, 1.6531711335659358, -2.381541895023577e-28, -9.85947269
 u0 = [0.4096889309095969, 0.201508784460286]
 
 #optimized trim state
-xopt, fopt = optimize_trim(x0,u0,CRC3)
+xopt, fopt = optimize_trim(x0,u0,CRC3,x0)
 u = xopt[1:2]
 x = xopt[3:end]
 
@@ -129,7 +129,7 @@ t = 0:13
 tSpan = [0,t[end]]
 uSpline = [Akima(t,u[1]*ones(length(t))), Akima(t,u[2]*ones(length(t)))]
 path = simulate(x, uSpline, CRC3, tSpan)
-plot_simulation(path, uSpline)
+plot_simulation(path, uSpline,CRC3)
 
 
 # Vinf = zeros(length(path.u))

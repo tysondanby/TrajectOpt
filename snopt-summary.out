@@ -1,0 +1,134 @@
+
+ ==============================
+ S N O P T  7.7.3    (Dec 2019)
+ ==============================
+
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+
+
+
+ Nonlinear constraints       3     Linear constraints       1
+ Nonlinear variables        21     Linear variables         0
+ Jacobian  variables        21     Objective variables     21
+ Total constraints           4     Total variables         21
+
+
+
+
+ ==============================
+ S N O P T  7.7.3    (Dec 2019)
+ ==============================
+
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+
+
+
+ Nonlinear constraints       3     Linear constraints       1
+ Nonlinear variables        21     Linear variables         0
+ Jacobian  variables        21     Objective variables     21
+ Total constraints           4     Total variables         21
+
+
+
+ The user has defined      84   out of      84   first  derivatives
+
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction     nS Penalty
+     0     17               1  4.5E+01  7.0E+00  1.0000000E-05     10           r
+     1     29  1.3E-01      2  2.4E+01  9.2E-01 -1.4258099E+00     13 3.0E-03   rl
+
+ ==============================
+ S N O P T  7.7.3    (Dec 2019)
+ ==============================
+
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+
+
+
+ Nonlinear constraints       3     Linear constraints       1
+ Nonlinear variables        21     Linear variables         0
+ Jacobian  variables        21     Objective variables     21
+ Total constraints           4     Total variables         21
+
+
+
+ The user has defined      84   out of      84   first  derivatives
+
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction     nS Penalty
+     0     18               1  2.2E+02  1.0E+00  1.0000000E-05      1           r i
+
+ ==============================
+ S N O P T  7.7.3    (Dec 2019)
+ ==============================
+
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+
+
+
+ Nonlinear constraints       3     Linear constraints       1
+ Nonlinear variables        21     Linear variables         0
+ Jacobian  variables        21     Objective variables     21
+ Total constraints           4     Total variables         21
+
+
+
+ The user has defined      84   out of      84   first  derivatives
+
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction     nS Penalty
+     0     68               1  2.5E+01  2.9E+00  1.0000000E-05     17           r
+     1      9  5.2E-13      8  2.5E+01  4.0E-03  6.2643428E+00      9 1.3E-03   r
+     2     13  6.2E-06     18  2.5E+01  2.0E-01  6.2632479E+00     13 1.3E-03 s
+     2      8              25  2.5E+01  2.3E-01  1.0053216E-05     14         s R
+     3      3  1.0E+00     34  1.5E+01  2.5E+02  2.2282947E-01     14 1.0E-04 s
+     4      7  2.2E-04     44  1.5E+01  8.2E+02  2.3805924E-01     15 1.1E-04  m
+     4     10              49  1.5E+01  1.3E+01 -3.1925970E-01     14          mr
+     5     31  2.3E-07     58  1.5E+01  3.0E+01  1.3744344E+03     19 2.6E-01 s   i
+     5     13              64  1.5E+01  1.0E+03 -3.1880957E-01     17         s R i
+     5      8              70  1.5E+01  9.7E+02 -3.1880957E-01     13         s r
+     6     22  1.3E-05     80  1.3E+02  3.2E+02  5.6658265E+02     15 2.0E-01 s   i
+     7     32  1.0E+00     81  1.5E+01  9.8E+04 -1.0037905E+07     17 1.7E+00     i
+     8      4  8.4E-08     87  1.5E+01  1.7E+03  5.1003076E+06     18 3.5E+03     i
+     8      4              92  1.5E+01  1.7E+03  3.6831326E+07     17           R i
+     8     18              98  1.5E+01  3.0E+06  4.2551574E+09     13           r
+     9     23  1.0E+00    100  8.9E+00  1.0E+06  6.5175171E+02     14           r
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction     nS Penalty
+    10      6  4.2E-06    109  8.9E+00  1.7E+03  3.7801907E+03     15 4.7E-01 s   i
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction     nS Penalty
+    10     18             114  8.9E+00  1.2E+03  6.5285713E+02     19         s R i
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction     nS Penalty
+    10     10             121  8.9E+00  1.7E+06  6.5285713E+02     13         s r
+    11     19  4.3E-01    131  1.4E+01  1.3E+03  1.9264003E+03     14 2.2E-01 s
+
+ SNOPTA EXIT  40 -- terminated after numerical difficulties
+ SNOPTA INFO  43 -- cannot satisfy the general constraints
+
+ Problem name                 Opt Prob
+ No. of iterations                 328   Objective            5.3635638528E+01
+ No. of major iterations            12   Linear    obj. term  0.0000000000E+00
+ Penalty parameter           2.681E+02   Nonlinear obj. term  5.3635638528E+01
+ No. of infeasibilities              3   Sum of infeas        8.5075787533E+01
+ User function calls (total)       134
+ No. of superbasics                 12   No. of basic nonlinears             1
+ No. of degenerate steps             1   Percentage                       0.30
+ Max x                      21 2.0E+01   Max pi                      1 1.0E+08
+ Max Primal infeas          23 6.9E+01   Max Dual infeas             1 2.6E+12
+ Nonlinear constraint violn    6.9E+01
+
+
+
+ Solution printed on file  18
+
+ Time for MPS input                             0.00 seconds
+ Time for solving problem                      10.71 seconds
+ Time for solution output                       0.00 seconds
+ Time for constraint functions                 10.69 seconds
+ Time for objective function                    0.00 seconds

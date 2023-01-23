@@ -1,4 +1,4 @@
-function dynamics_2D!(dx, x, p, t)  
+function dynamics_2D!(dx, x, p, t)
     #get states
     vinf, gamma, thetadot, theta, posx, posy = x
     #get parameters, inputs, and forces
@@ -6,12 +6,12 @@ function dynamics_2D!(dx, x, p, t)
     u = [uSpline[1](t),uSpline[2](t)]
     F, M = model.forces(x,u)
     #get physical parameters from model
-    m = model.parameters.m 
+    m = model.parameters.m
     I = model.parameters.I
     #calculate time derivatives from equtions of motion
     k = F[2]/(m*vinf^2)
-    dx[1] = F[1]/m  
-    dx[2] = vinf*k  
+    dx[1] = F[1]/m
+    dx[2] = vinf*k
     dx[3] = M/I
     dx[4] = thetadot
     dx[5] = vinf*cosd(gamma)
@@ -21,11 +21,12 @@ end
 
 function simulate(x0, uSpline, model, tSpan)
     prob = DE.ODEProblem(dynamics_2D!, x0, tSpan, (uSpline, model))
-    sol = solve(prob, abstol = 1e-3, reltol = 1e-3)     
+    sol = solve(prob, abstol = 1e-3, reltol = 1e-3)
     return sol
 end
 
-function plot_simulation(path, uSpline)
+function plot_simulation(path, uSpline,model)
+    unames = model.unames
     Vinf_points = zeros(length(path.u))
     gamma_points = zeros(length(path.u))
     theta_dot_points = zeros(length(path.u))
@@ -49,24 +50,29 @@ function plot_simulation(path, uSpline)
 
     t = range(path.t[1], stop = path.t[end], length = 200)
     Vinf = Vinf_spline.(t)
-    u_top = uSpline[1].(t)
-    u_bottom = uSpline[2].(t)
+    #u_top = uSpline[1].(t)
+    #u_bottom = uSpline[2].(t)
     gamma = gamma_spline.(t)
     theta = theta_spline.(t)
     posy = posy_spline.(t)
     posx = posx_spline.(t)
     aoa = theta - gamma
 
-    p1 = plot(t, Vinf, xlabel = "Time (s)", ylabel = "State", label = "Velocity", legend = :topleft)
+    xplot = plot(t, Vinf, xlabel = "Time (s)", ylabel = "State", label = "Velocity", legend = :topleft)
     plot!(t, gamma, label = "Flightpath Angle")
     plot!(t, theta, label = "Pitch Angle")
     plot!(t, aoa, label = "Angle of Attack")
     plot!(t, posy, label = "Y Position")
     # plot!(t, posx, label = "X Position")
-    # p2 = plot(t, u_top, xlabel = "Time (s)", ylabel = "Thrust (N)", label = "Top", legend = :topleft)
-    p2 = plot(t, u_top, xlabel = "Time (s)", ylabel = "Input", label = "Thrust", legend = :topleft)
-    plot!(t, u_bottom, label = "Elevator")
-    p = plot(p1,p2,layout = 2)
+
+    uplot = plot(t, uSpline[1].(t), xlabel = "Time (s)", ylabel = "Input", label = unames[1], legend = :topleft)
+    for i =1:1:length(unames)
+        if i > 1
+            plot!(t,uSpline[i].(t),label = unames[i])
+        end
+    end
+
+    p = plot(xplot,uplot,layout = 2)
     display(p)
 end
 
@@ -80,16 +86,16 @@ end
 # function dynamicsEU(x,F,M,model)
 #     vinf, gamma, thetadot, theta, posx, posy = x
 #     #get physical parameters from model
-#     m = model.m 
+#     m = model.m
 #     I = model.I
 #     #calculate time derivatives from equtions of motion
 #     k = F[2]/(m*vinf^2)
 #     dx = zeros(6)   # inefficient
-#     dx[1] = F[1]/m  
+#     dx[1] = F[1]/m
 #     dx[2] = vinf*k*180/pi
 #     dx[3] = M/I*180/pi
 #     dx[4] = thetadot
-#     dx[5] = vinf*cosd(gamma) 
+#     dx[5] = vinf*cosd(gamma)
 #     dx[6] = vinf*sind(gamma)
 #     #@show dx
 #     return dx
@@ -99,7 +105,7 @@ end
 # function step!(x,u,dt,model)
 #     F,M = forces(x,u,model)
 #     dx = dynamicsEU(x,F,M,model)
-#     x += dx*dt          
+#     x += dx*dt
 #     return x, dx
 # end
 

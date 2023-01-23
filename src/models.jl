@@ -1,33 +1,46 @@
 abstract type Model end
 abstract type Parameters end
 
-struct Conventional <: Parameters
-    m::Float64
-    I::Float64
-    X::Float64
-    L::Float64  #tail moment arm
-    SWing::Float64
-    bWing::Float64
-    STail::Float64
-    bTail::Float64
-    rho::Float64
-    mu::Float64
-    g::Float64
+struct Conventional{T1,T2} <: Parameters
+    m::T1 #Float64
+    I::T1
+    X::T1
+    L::T1  #tail moment arm
+    SWing::T1
+    bWing::T1
+    STail::T1
+    bTail::T1
+    rho::T1
+    mu::T1
+    g::T1
+    unames::T2#Matrix{String}
+
+    function Conventional(m,I,X,L,Swing,bwing,Stail,bTail,rho,mu,g)
+        unames= ["Thrust" "Elevator"]
+        new{typeof(m),typeof(unames)}(m,I,X,L,Swing,bwing,Stail,bTail,rho,mu,g,unames)
+    end
 end
 
-struct BiWingTailSitter <: Parameters
-    m::Float64
-    I::Float64
-    X::Float64
-    s::Float64  #distance between wings
-    S::Float64
-    b::Float64#
-    rho::Float64
-    mu::Float64
-    g::Float64
+struct BiWingTailSitter{T1,T2} <: Parameters
+    m::T1
+    I::T1
+    X::T1
+    s::T1  #distance between wings
+    S::T1
+    b::T1#
+    rho::T1 #TODO: maybe these should be defined somewhere else. they are properties of the atmosphere, not the aircraft.
+    mu::T1
+    g::T1
+    unames::T2#Matrix{String}
+
+    function BiWingTailSitter(m,I,X,s,S,b,rho,mu,g)
+        unames= ["Top Thrust" "Bottom Thrust"]
+        new{typeof(m),typeof(unames)}(m,I,X,s,S,b,rho,mu,g,unames)
+    end
+
 end
 
-struct LowFidel <: Model
+struct LowFidel{Parameters} <: Model
     parameters::Parameters
     forces::Function
 end
@@ -124,7 +137,7 @@ function biwing_tailsitter_forces_constructor(polar_function, parameters::BiWing
         #add thrust
         # f[1,:] .-= 2*u*cosd(alpha)
         # f[2,:] .+= 2*u*sind(alpha)
-        #forces in the x and y directions with respect to the inertial frame
+        #forces in the TANGENTIAL and NORMAL directions with respect to the inertial frame
         # f[1,:] .*= -1
         F = [sum(u)*cosd(alpha) - sum(f[1,:]) - m*9.81*sind(gamma), sum(u)*sind(alpha) + sum(f[2,:]) - m*9.81*cosd(gamma)]
         #total moment due to forces and torques

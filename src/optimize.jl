@@ -18,22 +18,22 @@ function optimize_trim(x0, u0, model, final)
     xopt, fopt, info = minimize(trim_objective, designVars, ng, lx, ux, lg, ug,options)
     return xopt, fopt
 end
-
-function trim_objective_constructor(final, model)#Use optimizer to find a trimmed state
+                                                                #TODO: see if this declaration does what I think
+function trim_objective_constructor(final, model::LowFidel{<:BiWingTailSitter})#Use optimizer to find a trimmed state
     function trim_objective(g, designVars)#
         u = designVars[1:2]
         uSpline = [FM.Akima(0:2,u[1]*ones(3)), FM.Akima(0:2,u[2]*ones(3))]
         x = designVars[3:end]
-        obj = u[1]#sum(u .^2)
+        obj = (u[1]+u[2])*x[1]/(cosd(x[4])^2)#+u[2]#min thrust#x[1]#min V #sum(u .^2)
         dx = dynamics_2D!(x, x, (uSpline, model), 1) #look up best practices
-        g[1] = dx[1]
-        g[2] = dx[2]
-        g[3] = dx[3]
-        g[4] = dx[4]
-        g[5] = u[1] #TODO: why is this input constrained to zero? is it torque?
-        # g[6] = u[2]
-        g[7] = x[2]
-        g[8] = x[6] - final[6]
+        g[1] = dx[1]#0 Not accelerating forward
+        g[2] = dx[2]#0 Not accelerating up or down (since flight path angle isn't changing)
+        g[3] = dx[3]#0 Pitch rate not changing
+        g[4] = dx[4]#0 Pitch rate is zero
+        g[5] = u[1]#+u[2]#0-inf Thrust is positive
+        g[6] = u[2]#0-inf Thrust is positive
+        g[7] = x[2]#0 Forward flight (angle of Vinf to horizontal is zero)
+        g[8] = x[6] - final[6]#0  Altitude matches desired.
         return obj
     end
     return trim_objective

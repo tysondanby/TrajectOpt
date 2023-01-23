@@ -117,11 +117,12 @@ CRC3 = LowFidel(CRC3Parameters, CRC3Forces)
 #===============Trajectory Optimization================#
 
 #initial state
-# initial = [26.53543674218781, 1.6531711335659358, -2.381541895023577e-28, -9.859472699953022e-9, 0.0, 0.0]   
+# initial = [26.53543674218781, 1.6531711335659358, -2.381541895023577e-28, -9.859472699953022e-9, 0.0, 0.0]
 # u_initial = [0.4096889309095969, 0.201508784460286]
-initial = [20.360249514824275, -9.793973890305291e-9, 1.639302791149322e-20, 1.3504258298384568, 0.0, 0.0]   
+#Vinf, gamma, thetadot, theta, posx, posy
+initial = [10,50.0,0.0,50.0,0.0,0.0]#[19.962, 2.24e-13, -3.3511e-15, 1.6459, 0.0, 0.0]
 # u_initial = [0.23035833080744003, 0.18695614605033223]
-u_initial = [0.00016036799608707683, 0.0001503488915109187]
+u_initial = [0.001,0.001]#[0.42758, 0.41476]
 # initial = [.000000001, 90, 0.0, 90, 0.0, 0.0]
 
 #trimmed final state
@@ -145,8 +146,9 @@ nSegs = 5
 #number of design variables per segment
 n = 10
 
-#initial guess at trajectory
+#initial guess at input spline points
 us = u_initial.*ones(2,n)
+
 
 # #clear output file
 # open("optimization_outputs.txt", "w") do io
@@ -165,7 +167,7 @@ uSpline = [Akima(t,u[1,:]),Akima(t,u[2,:])]
 
 #optimized simulation
 path = simulate(initial, uSpline, CRC3, tSpan)
-plot_simulation(path, uSpline)
+plot_simulation(path, uSpline,CRC3Parameters)
 path
 
 # A = readdlm("optimization_outputs.txt", '\t', Float64, '\n')
@@ -216,7 +218,7 @@ path
 
 
 # iter = 500
-# output = [ path.t, Vinf, gamma, theta, aoa, 
+# output = [ path.t, Vinf, gamma, theta, aoa,
 #   posx, posy, uopt, fopt, iter, "starting from trimmed trajectory", "all stability constraints"]
 # open("altitude_constraint_all_stability.txt", "a") do io
 #   writedlm(io, output)
@@ -229,4 +231,3 @@ path
 #   sleep(.1)
 #   display(p)
 # end
-

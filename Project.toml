@@ -10,6 +10,7 @@ FLOWMath = "6cb5d3fb-0fe8-4cc2-bd89-9fe0b19a99d3"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 SNOW = "105f6ee8-0889-46b1-9d4b-65e03cbc8f13"
+Snopt = "0e9dc826-d618-11e8-1f57-c34e87fde2c0"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
