@@ -43,13 +43,13 @@ function optimize_trajectory(initial, final, us, tFinal, model)
     designVars = vcat(us[1,:], us[2,:], tFinal)
     trajectory_objective = trajectory_objective_constructor(initial, final, model)
     ng = 3
+    lg = zeros(ng)
+    ug = zeros(ng)
     lu = zeros(length(designVars))
     uu = 5*ones(length(designVars))
     lu[Int((end-1)/2):end-1] .= -30
     uu[Int((end-1)/2):end-1] .= 30
-    uu[end] = Inf
-    lg = zeros(ng)
-    ug = zeros(ng)
+    uu[end] = Inf #This is Inf since it is the time taken.
     ip_options = Dict(
         "tol" => 1e-1,
         "max_iter" => 1000
@@ -64,10 +64,14 @@ end
 function trajectory_objective_constructor(initial, final, model)#Give an inital state, desired final state, and a model. constructs an objective function with constraints.
     function trajectory_objective(g,designVars)#g are constraints (residual functions, we want all g values to be zero) and designVars are the things we can change (thrust spline points and final time)
         #designVars[:1:end-1] = thrust spline points, designVars[end] = time
+        thrusts = designVars[:1:end-1]
+        println("Thrusts: ",size(thrusts))
         # obj = sum(designVars[1:end-1].^2)
-        obj = sum(designVars[1:Int((end-1)/2)].^2)   #Thrust squared
+        #obj = sum(designVars[1:(end-1)].^2)   #Thrust squared
+
         #rearrange designVars
         us = transpose(reshape(designVars[1:end-1],Int((length(designVars)-1)/2),2))
+        println("Us: ",size(us))
         #get values from the dual numbers
         tSpan = [0,designVars[end]]
         #create splines
@@ -76,9 +80,16 @@ function trajectory_objective_constructor(initial, final, model)#Give an inital 
         x = simulate(initial, uSpline, model, tSpan)
         # dx = dynamics!(x[:,end],x[:,end],(model, uSpline),t)
         #constrain final states to the desired final states
-        g[1] = x[6,end] - final[6]
-        g[2] = x[2,end] - final[2]
-        g[3] = x[1,end] - final[1]
+        g[1] = x[6,end] - final[6]#Final height
+        g[2] = x[2,end] - final[2]#Final Flightpath angle
+        g[3] = x[1,end] - final[1]#Final Velocity
+
+        obj = 0.0
+        for i = 1:1:length(thrusts)
+            obj=abs(thrusts[i]*x[1,i]) + obj
+        end
+
+        obj = obj *(designVars[end]/length(thrusts))
 
         # mappedXIndices = Int.(round.(range(1, stop = length(x[1,:]), length = length(t))))
         # g[2:length(t)+1] = x[1,mappedXIndices] .- initial[1]

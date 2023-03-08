@@ -1,2 +1,0 @@
-# TrajectOpt
-# TrajectOpt

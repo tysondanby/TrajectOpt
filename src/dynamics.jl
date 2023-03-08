@@ -1,3 +1,4 @@
+
 function dynamics_2D!(dx, x, p, t)
     #get states
     vinf, gamma, thetadot, theta, posx, posy = x
@@ -19,11 +20,18 @@ function dynamics_2D!(dx, x, p, t)
     return dx
 end
 
+#TODO: Differential Equations giving instability error.
+
 function simulate(x0, uSpline, model, tSpan)
     prob = DE.ODEProblem(dynamics_2D!, x0, tSpan, (uSpline, model))
-    sol = solve(prob, abstol = 1e-3, reltol = 1e-3)
+    println("problem formulated")
+    sol = solve(prob,Rosenbrock23(), abstol = 1e-3, reltol = 1e-3)
+    global testsol = sol
+    global testuSpline = uSpline
+    println("problem solved")
     return sol
 end
+
 
 function plot_simulation(path, uSpline,model)
     unames = model.unames
@@ -58,21 +66,23 @@ function plot_simulation(path, uSpline,model)
     posx = posx_spline.(t)
     aoa = theta - gamma
 
-    xplot = plot(t, Vinf, xlabel = "Time (s)", ylabel = "State", label = "Velocity", legend = :topleft)
+    xplot = plot(t, Vinf, xlabel = "Time (s)", ylabel = "State", label = "Velocity", legend = :outertopleft)
     plot!(t, gamma, label = "Flightpath Angle")
     plot!(t, theta, label = "Pitch Angle")
     plot!(t, aoa, label = "Angle of Attack")
     plot!(t, posy, label = "Y Position")
     # plot!(t, posx, label = "X Position")
 
-    uplot = plot(t, uSpline[1].(t), xlabel = "Time (s)", ylabel = "Input", label = unames[1], legend = :topleft)
+    uplot = plot(t, uSpline[1].(t), xlabel = "Time (s)", ylabel = "Input", label = unames[1], legend = :outertopleft)
     for i =1:1:length(unames)
         if i > 1
             plot!(t,uSpline[i].(t),label = unames[i])
         end
     end
 
-    p = plot(xplot,uplot,layout = 2)
+    pathplot = plot(posx_points, posy_points, xlabel = "Horizontal", ylabel = "Vertical", label = "Flight Path", legend = :outertopleft, aspect_ratio =:equal)
+
+    p = plot(xplot,uplot,pathplot,layout = 3, size = (1200,450))
     display(p)
 end
 
@@ -109,7 +119,7 @@ end
 #     return x, dx
 # end
 
-# function simulateEU(x,u,t,model)
+# function simulateEU(x,u,model,t)
 #     x_hist = zeros(length(x),length(t))
 #     x_hist[:,1] = x
 #     for i in 2:length(t)

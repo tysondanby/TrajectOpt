@@ -2,7 +2,7 @@ using TrajectOpt
 using Plots
 using FLOWMath
 using DelimitedFiles
-
+println("Running")
 #physical system
 m = 1.36
 I = .0111
@@ -117,20 +117,20 @@ CRC3 = LowFidel(CRC3Parameters, CRC3Forces)
 #===============Trajectory Optimization================#
 
 #initial state
-initial = [0.1, 90.0, 0.0, 90.0, 0.0, 0.0]#[26.53543674218781, 1.6531711335659358, -2.381541895023577e-28, -9.859472699953022e-9, 0.0, 0.0]
+initial = [0.1, 90.0, 0.0, 90.0, 0.0, 0.0]
 # u_initial = [0.4096889309095969, 0.201508784460286]
 #Vinf, gamma, thetadot, theta, posx, posy
 #initial = [10,50.0,0.0,50.0,0.0,0.0]#[19.962, 2.24e-13, -3.3511e-15, 1.6459, 0.0, 0.0]
 # u_initial = [0.23035833080744003, 0.18695614605033223]
-#u_initial = [10.0,10.0]#[0.42758, 0.41476]
+u_initial = [10.0,10.0]#[0.42758, 0.41476]
 # initial = [.000000001, 90, 0.0, 90, 0.0, 0.0]
 
 #trimmed final state #TODO make sure this state makes sense
-final = [6.0, 0.0, -3.3511e-15, 1.6459, 0.0, 23.4869]#deepcopy(initial)
+final = [19.962, 2.24e-13, -3.3511e-15, 1.6459, 0.0, 0.0]#deepcopy(initial)
 
 #desired final position
-#posy_final = 23
-#final[6] = posy_final
+posy_final = 1
+final[6] = posy_final
 
 # VinfFinal = 30
 # final[1] = VinfFinal
@@ -146,35 +146,23 @@ nSegs = 5
 #number of design variables per segment
 n = 25
 
-#initial guess at input spline points
+#initial guess at input spline points UNITS NEWTONS
 Tmax = 15
 utop = Tmax*[0.45,0.5,0.45,0.45,0.47,0.45,0.45,0.45,0.4,0.40,0.35,0.35,0.30,0.30,0.25,0.20,0.17,0.17,0.17,0.1,0.08,0.07,0.07,0.06,0.06]
 ubot = Tmax*[0.45,0.45,0.45,0.5,0.45,0.45,0.45,0.45,0.4,0.40,0.35,0.35,0.30,0.30,0.25,0.20,0.17,0.16,0.16,0.1,0.08,0.07,0.07,0.05,0.05]#.45 is near hover case
 
 #uopt, fopt = optimize_trajectory(initial, final, us, tFinal, CRC3)
-us = zeros(2,n)
-us[1,:] = utop#uopt[1:Int((end-1)/2)]
-us[2,:] = ubot#uopt[Int((end-1)/2)+1:end-1]
-
-
-# #clear output file
-# open("optimization_outputs.txt", "w") do io
-#   writedlm(io, [
-#     0.0	0.5555555555555556	1.1111111111111112	1.6666666666666667	2.2222222222222223	2.7777777777777777	3.3333333333333335	3.888888888888889	4.444444444444445	5.0
-#   ])
-# end
-
-uopt, fopt = optimize_trajectory(initial, final, us, tFinal, CRC3)
-println("u :",uopt)
 u = zeros(2,n)
-u[1,:] = uopt[1:Int((end-1)/2)]
-u[2,:] = uopt[Int((end-1)/2)+1:end-1]
-t = range(0,stop = uopt[end],length = length(u[1,:]))
+u[1,:] = utop#uopt[1:Int((end-1)/2)]
+u[2,:] = ubot#uopt[Int((end-1)/2)+1:end-1]
+t = range(0,stop = tFinal,length = length(u[1,:]))
 tSpan = [0,t[end]]
 uSpline = [Akima(t,u[1,:]),Akima(t,u[2,:])]
 
+println("Ready To Simulate")
 #optimized simulation
 path = simulate(initial, uSpline, CRC3, tSpan)
+println("Simulated!")
 plot_simulation(path, uSpline,CRC3Parameters)
 path
 
